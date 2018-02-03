@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PhpSpreadsheet - Read, Write Excel and LibreOffice Calc files</title>
+<meta name="description" content="PhpSpreadsheet - Free PHP library with classes for reading and writing spreadsheet files: ODX, XLSX, XLS, CSV. Read /Write Excel and LibreOffice Calc" />
+<style>
+body, html {background-color:#fdfdfd;margin:1px 4px;padding:0;font-size:1em;font-family:"Calibri",sans-serif;}
+.sb {font-weight:700;}
+.su {text-decoration:underline;}
+.sbi {font-weight:700;font-style:oblique;}
+.si {font-style:oblique;}
+.cb {color:#0000eb;}
+.cr {color:#eb0000;}
+h1 {text-align:center;}
+h1, h3, h4 {
+ margin:1em;
+ text-decoration:underline;
+}
+pre {width:99%;max-height:550px;background:#fefebb;font-size:15px; font-weight:bold; color:blue;padding:3px 4px;overflow:auto;}
+blockquote {background:#ebebfe;padding:2px 3px;font-size:17px;}
+#mp {
+ display:block;
+ margin:1.5em auto;
+ text-align:center;
+}
+</style>
+</head>
+<body>
+<h1>PhpSpreadsheet - Read, Write Excel and LibreOffice Calc files</h1>
+<strong>PhpSpreadsheet is a PHP library with a set of classes for reading and writing spreadsheet files, like Excel and LibreOffice Calc</strong>.<br>
+PhpSpreadsheet is the <em>next version of PHPExcel</em>. It can read and write: <em>Open Document Format/OASIS (.ods), Office Open XML (.xlsx) Excel, BIFF 8 (.xls) Excel, HTML, CSV</em>. Also, it can write PDF (using either the tcPDF, DomPDF or mPDF libraries), and charts.<br><br>
+<h3>Software requirements</h3>
+ - PHP version 5.6 or newer.<br>
+ - PHP extension php_zip enabled.<br>
+ - PHP extension php_xml enabled.<br>
+ - PHP extension php_gd2 enabled (if not compiled in, optional, but required for exact column width autocalculation).
+<h3>PhpSpreadsheet Installation and Usage</h3>
+<ol>
+ <li>Copy the <span class="sbi">spreadsheet</span> folder with all its content on your server.<br>
+ <span class="si">- It contains also all the 3rd party required php libraries, in the "<span class="sbi">vendor/</span>" folder. So, you can create PDF documents and Charts.</span></li>
+ <li>In the php file where you want to use the PhpSpreadsheet library, include the "<span class="sb">spreadsheet/vendor/autoload.php</span>" file. Then, with the "<span class="sb">use</span>" instruction add the classes you want to use.
+ - Like in this code:
+<pre class="code">
+//include the file that loads the PhpSpreadsheet classes
+require 'spreadsheet/vendor/autoload.php';
+
+//include the classes needed to create and write .xlsx file
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+//now you can use the Spreadsheet and Xlsx classes
+</pre></li>
+</ol>
+Here are some examples with PhpSpreadsheet.<br>
+<h4>Create a simple .xlsx file</h4>
+<pre class="code">
+//include the file that loads the PhpSpreadsheet classes
+require 'spreadsheet/vendor/autoload.php';
+
+//include the classes needed to create and write .xlsx file
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+//object of the Spreadsheet class to create the excel data
+$spreadsheet = new Spreadsheet();
+
+//add some data in excel cells
+$spreadsheet-&gt;setActiveSheetIndex(0)
+ -&gt;setCellValue('A1', 'Domain')
+ -&gt;setCellValue('B1', 'Category')
+ -&gt;setCellValue('C1', 'Nr. Pages');
+
+
+$spreadsheet-&gt;setActiveSheetIndex(0)
+ -&gt;setCellValue('A2', 'CoursesWeb.net')
+ -&gt;setCellValue('B2', 'Web Development')
+ -&gt;setCellValue('C2', '4000');
+
+$spreadsheet-&gt;setActiveSheetIndex(0)
+ -&gt;setCellValue('A3', 'MarPlo.net')
+ -&gt;setCellValue('B3', 'Courses &amp; Games')
+ -&gt;setCellValue('C3', '15000');
+
+//set style for A1,B1,C1 cells
+$cell_st =[
+ 'font' =&gt;['bold' =&gt; true],
+ 'alignment' =&gt;['horizontal' =&gt; \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+ 'borders'=&gt;['bottom' =&gt;['style'=&gt; \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM]]
+];
+$spreadsheet-&gt;getActiveSheet()-&gt;getStyle('A1:C1')-&gt;applyFromArray($cell_st);
+
+//set columns width
+$spreadsheet-&gt;getActiveSheet()-&gt;getColumnDimension('A')-&gt;setWidth(16);
+$spreadsheet-&gt;getActiveSheet()-&gt;getColumnDimension('B')-&gt;setWidth(18);
+
+$spreadsheet-&gt;getActiveSheet()-&gt;setTitle('Simple'); //set a title for Worksheet
+
+//make object of the Xlsx class to save the excel file
+$writer = new Xlsx($spreadsheet);
+$fxls ='excel-file_1.xlsx';
+$writer-&gt;save($fxls);
+</pre>
+<h4>Reading Excel file data and display it in html table</h4>
+- In this example it is used the excel document created in the example above. We add and display its data into a html table.
+<pre class="code">
+//include the file that loads the PhpSpreadsheet classes
+require 'spreadsheet/vendor/autoload.php';
+
+//create directly an object instance of the IOFactory class, and load the xlsx file
+$fxls ='excel-file_1.xlsx';
+$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fxls);
+
+
+//read excel data and store it into an array
+$xls_data = $spreadsheet-&gt;getActiveSheet()-&gt;toArray(null, true, true, true);
+/* $xls_data contains this array:
+[1=&gt;['A'=&gt;'Domain', 'B'=&gt;'Category', 'C'=&gt;'Nr. Pages'], 2=&gt;['A'=&gt;'CoursesWeb.net', 'B'=&gt;'Web Development', 'C'=&gt;4000], 3=&gt;['A'=&gt;'MarPlo.net', 'B'=&gt;'Courses &amp; Games', 'C'=&gt;15000]]
+*/
+
+//now it is created a html table with the excel file data
+$html_tb ='&lt;table border=&quot;1&quot;&gt;&lt;tr&gt;&lt;th&gt;'. implode('&lt;/th&gt;&lt;th&gt;', $xls_data[1]) .'&lt;/th&gt;&lt;/tr&gt;';
+$nr = count($xls_data); //number of rows
+for($i=2; $i&lt;=$nr; $i++){
+  $html_tb .='&lt;tr&gt;&lt;td&gt;'. implode('&lt;/td&gt;&lt;td&gt;', $xls_data[$i]) .'&lt;/td&gt;&lt;/tr&gt;';
+}
+$html_tb .='&lt;/table&gt;';
+
+echo $html_tb;
+</pre>
+Results this html table:
+<div class="apare"><table border="1"><tr><th>Domain</th><th>Category</th><th>Nr. Pages</th></tr><tr><td>CoursesWeb.net</td><td>Web Development</td><td>4000</td></tr><tr><td>MarPlo.net</td><td>Courses & Games</td><td>15000</td></tr></table></div>
+<h4>Make Excel document with a Pie Chart</h4>
+The PhpSpreadsheet can also be used to create Excel documents with various type of Charts inside.
+<pre class="code">
+//include the file that loads the PhpSpreadsheet classes
+require 'spreadsheet/vendor/autoload.php';
+
+//include the class needed to create excel data
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+$spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+//create an excel worksheet and add some data for chart
+$worksheet = $spreadsheet-&gt;getActiveSheet();
+$worksheet-&gt;fromArray([
+ ['', 2010, 2011, 2012],
+ ['Q1', 12, 15, 21],
+ ['Q2', 56, 73, 86],
+ ['Q3', 52, 61, 69],
+ ['Q4', 30, 32, 0],
+]);
+
+//Set the Labels for each data series we want to plot
+// Datatype
+// Cell reference for data
+// Format Code
+// Number of datapoints in series
+// Data values
+// Data Marker
+$dataSeriesLabels = [
+ new \PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues('String', 'Worksheet!$C$1', null, 1), //	2011
+];
+
+//Set the X-Axis Labels
+// Datatype
+// Cell reference for data
+// Format Code
+// Number of datapoints in series
+// Data values
+// Data Marker
+$xAxisTickValues = [
+ new \PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues('String', 'Worksheet!$A$2:$A$5', null, 4), //	Q1 to Q4
+];
+
+//Set the Data values for each data series we want to plot
+// Datatype
+// Cell reference for data
+// Format Code
+// Number of datapoints in series
+// Data values
+// Data Marker
+$dataSeriesValues = [
+ new \PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues('Number', 'Worksheet!$C$2:$C$5', null, 4),
+];
+
+//	Build the dataseries
+$series = new \PhpOffice\PhpSpreadsheet\Chart\DataSeries(
+ \PhpOffice\PhpSpreadsheet\Chart\DataSeries::TYPE_PIECHART, // plotType
+ null, // plotGrouping (Pie charts don't have any grouping)
+ range(0, count($dataSeriesValues) - 1), // plotOrder
+ $dataSeriesLabels, // plotLabel
+ $xAxisTickValues, // plotCategory
+ $dataSeriesValues          // plotValues
+);
+
+//	Set up a layout object for the Pie chart
+$layout = new \PhpOffice\PhpSpreadsheet\Chart\Layout();
+$layout-&gt;setShowVal(true);
+$layout-&gt;setShowPercent(true);
+
+//	Set the series in the plot area
+$plotArea = new \PhpOffice\PhpSpreadsheet\Chart\PlotArea($layout, [$series]);
+//	Set the chart legend
+$legend = new \PhpOffice\PhpSpreadsheet\Chart\Legend(\PhpOffice\PhpSpreadsheet\Chart\Legend::POSITION_RIGHT, null, false);
+
+$title = new \PhpOffice\PhpSpreadsheet\Chart\Title('Test Pie Chart');
+
+//	Create the chart
+$chart = new \PhpOffice\PhpSpreadsheet\Chart(
+ 'chart', // name
+ $title, // title
+ $legend, // legend
+ $plotArea, // plotArea
+ true, // plotVisibleOnly
+ 0, // displayBlanksAs
+ null, // xAxisLabel
+ null   // yAxisLabel		- Pie charts don't have a Y-Axis
+);
+
+//Set the position where the chart should appear in the worksheet
+$chart-&gt;setTopLeftPosition('A7');
+$chart-&gt;setBottomRightPosition('H20');
+
+//Add the chart to the worksheet
+$worksheet-&gt;addChart($chart);
+
+//Save Excel 2007 file
+$filename ='excel-pie-chart.xlsx';
+$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+$writer-&gt;setIncludeCharts(true);
+$writer-&gt;save($filename);
+</pre><br><br>
+ - The PhpSpreadsheet can also be used to create PDF documents with DomPdf or mPdf class, and calculations; run and see the examples in the "<span class="sbi">samples/</span>" folder.
+<br><hr><br>
+ &bull; Scipt from: <a href="http://coursesweb.net/php-mysql/phpspreadsheet-read-write-excel-libreoffice-files" title="PhpSpreadsheet - Read, Write Excel and LibreOffice Calc files">http://coursesweb.net/php-mysql/phpspreadsheet-read-write-excel-libreoffice-files</a><br>
+ &bull; Main source: <a href="https://github.com/PHPOffice/PhpSpreadsheet" title="PhpSpreadsheet - Git repository">PhpSpreadsheet - Git repository</a><br>
+ &bull; Documentation: <a href="http://phpspreadsheet.readthedocs.io/en/develop/" title="PhpSpreadsheet's documentation">PhpSpreadsheet's documentation</a><br><br>
+ - <span class="si">A good way to get started and to learn is to run and study some of the samples.</span>
+ <span class="sbi" id="mp">Have a Happy Life with Everyone.</span>
+<script>
+// <![CDATA[
+function selectElmCnt(elm) {
+  if(document.body.createTextRange) {
+    var range = document.body.createTextRange();
+    range.moveToElementText(elm);
+    range.select();
+  }
+  else if(window.getSelection) {
+    var selection = window.getSelection();
+    var range = document.createRange();
+    range.selectNodeContents(elm);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+var pre_code = document.querySelectorAll('pre.code');
+var nr_pc = pre_code.length;
+for(var i=0; i<nr_pc; i++) pre_code[i].onclick = function(){ selectElmCnt(this); }
+// ]]>
+</script>
+</body>
+</html>
